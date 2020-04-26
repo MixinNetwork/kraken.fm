@@ -247,6 +247,9 @@ window.onload = function() {
     sdpSemantics: 'unified-plan'
   };
 
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  const audioCtx = new AudioContext();
+
   async function subscribe(pc) {
     var res = await rpc('subscribe', [rnameRPC, unameRPC, ucid]);
     if (res.error && typeof res.error === 'string' && res.error.indexOf(unameRPC + ' not found in')) {
@@ -298,13 +301,6 @@ window.onload = function() {
           if (el) {
             el.remove();
             resizeVisulizers();
-          }
-          if (visulizers[id] && visulizers[id].audioCtx) {
-            try {
-              visulizers[id].audioCtx.close();
-            } catch (err) {
-              console.log(err)
-            }
           }
         };
 
@@ -420,19 +416,12 @@ window.onload = function() {
       }
     };
 
-    var AudioContext = window.AudioContext || window.webkitAudioContext;
-    var audioCtx = new AudioContext();
-    if (!audioCtx) {
-      return;
-    }
-
     var analyser = audioCtx.createAnalyser();
     analyser.fftSize = 256;
     analyser.minDecibels = -90;
     analyser.maxDecibels = -10;
     analyser.smoothingTimeConstant = 0.85;
     audioCtx.createMediaStreamSource(stream).connect(analyser);
-    visulizers[id].audioCtx = audioCtx;
     visualize(id, canvas, analyser, tid);
   }
 
