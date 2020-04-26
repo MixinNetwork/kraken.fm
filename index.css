@@ -24,6 +24,7 @@ audio {
   opacity: 0;
 }
 
+#microphone,
 #overlay,
 #form {
   display: none;
@@ -35,6 +36,7 @@ audio {
   text-align: center;
 }
 
+#microphone,
 #overlay {
   left: 50%;
   width: 560px;
@@ -45,6 +47,7 @@ audio {
   padding: 16px;
 }
 
+#microphone,
 #overlay p {
   background: rgba(0,0,0,0);
 }

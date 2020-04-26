@@ -270,7 +270,6 @@ window.onload = function() {
   }
 
   start();
-  handlePartyPerform();
 
   async function start() {
     try {
@@ -321,9 +320,17 @@ window.onload = function() {
         resizeVisulizers();
       };
 
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      var stream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+      } catch (err) {
+        document.getElementById('microphone').style.display = 'block';
+        console.error(err);
+        return;
+      }
       buildCanvas(stream, uid, name, 'me');
       resizeVisulizers();
+      handlePartyPerform();
       audioCtx.resume();
 
       stream.getTracks().forEach((track) => {
