@@ -299,6 +299,13 @@ window.onload = function() {
             el.remove();
             resizeVisulizers();
           }
+          if (visulizers[id] && visulizers[id].audioCtx) {
+            try {
+              visulizers[id].audioCtx.close();
+            } catch (err) {
+              console.log(err)
+            }
+          }
         };
 
         var aid = 'peer-audio-'+id;
@@ -386,27 +393,9 @@ window.onload = function() {
     } else {
       document.getElementById('peers').prepend(peer)
     }
+    visulizers[id] = { stream: stream }
+
     var canvas = document.getElementById(`canvas-${id}`);
-
-    if (visulizers[id]) {
-      visulizers[id].audioCtx.close();
-    }
-
-    var AudioContext = window.AudioContext || window.webkitAudioContext;
-    var audioCtx = new AudioContext();
-    var analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 256;
-    analyser.minDecibels = -90;
-    analyser.maxDecibels = -10;
-    analyser.smoothingTimeConstant = 0.85;
-    audioCtx.createMediaStreamSource(stream).connect(analyser);
-
-    visulizers[id] = {
-      audioCtx: audioCtx,
-      stream: stream
-    }
-    visualize(id, canvas, analyser, tid);
-
     var el = peer.querySelector('.mute.action,.unmute.action');
     if (stream.getTracks().length > 0 && !stream.getTracks()[0].enabled) {
       el.className = 'unmute action';
@@ -430,6 +419,21 @@ window.onload = function() {
         }
       }
     };
+
+    var AudioContext = window.AudioContext || window.webkitAudioContext;
+    var audioCtx = new AudioContext();
+    if (!audioCtx) {
+      return;
+    }
+
+    var analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 256;
+    analyser.minDecibels = -90;
+    analyser.maxDecibels = -10;
+    analyser.smoothingTimeConstant = 0.85;
+    audioCtx.createMediaStreamSource(stream).connect(analyser);
+    visulizers[id].audioCtx = audioCtx;
+    visualize(id, canvas, analyser, tid);
   }
 
   function visualize(id, canvas, analyser, tid) {
