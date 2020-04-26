@@ -324,6 +324,7 @@ window.onload = function() {
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       buildCanvas(stream, uid, name, 'me');
       resizeVisulizers();
+      audioCtx.resume();
 
       stream.getTracks().forEach((track) => {
         pc.addTrack(track, stream);
