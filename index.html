@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <meta name="keywords" content="webrtc,kraken,group voice call,voice conference,audio conference,conference call,audio conferencing">
+    <meta name="description" content="Kraken is an instant audio conferencing service, no registration required">
+    <link href="/index.css" rel="stylesheet">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#ffffff">
+    <title>Kraken</title>
+  </head>
+  <body>
+    <div id="invalid">
+      <h1><img src="/android-chrome-192x192.png" alt="Kraken"></h1>
+      <ul>
+        <li>start your audio conferencing at <span class="room domain">https://kraken.fm/</span><span class="room hint">ROOM-ID</span></li>
+        <li><span class="room hint">ROOM-ID</span> could be anything, a simple word is good for a public room</li>
+        <li>refersh this page to get a random and anonymous <span class="room hint">ROOM-ID</span> each time</li>
+        <li><span class="room random"></span></li>
+      </ul>
+    </div>
+    <div id="form">
+      <form action="javascript:void(0);">
+        <label for="name">enter a name to help others recognize you</label>
+        <input type="text" name="name">
+        <input type="submit" value="continue" id="name-submit">
+      </form>
+    </div>
+    <div id="peers">
+    </div>
+    <div id="overlay">
+      <p>🎉 share the page with people and waiting for others to join 🎉</p>
+    </div>
+    <h1 class="footer logo"><a href="/"><img src="/android-chrome-192x192.png" alt="Kraken"></a></h1>
+    <div class="footer party action"><span>🎉</span></div>
+    <script type="text/javascript" src="/index.js"></script>
+  </body>
+</html>

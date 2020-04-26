@@ -1,0 +1,192 @@
+html,
+body,
+div,
+h1,
+p,
+img,
+canvas,
+form,
+input,
+ul,
+li,
+audio {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background: #000000;
+  color: #FFFFFF;
+  font-family: sans-serif;
+}
+
+audio {
+  width: 0;
+  height: 0;
+  opacity: 0;
+}
+
+#overlay,
+#form {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 40%;
+  transform: translateY(-40%);
+  width: 100%;
+  text-align: center;
+}
+
+#overlay {
+  left: 50%;
+  width: 560px;
+  max-width: 100%;
+  transform: translate(-50%, -50%);
+  font-size: 32px;
+  background: rgba(0,0,0,0.7);
+  padding: 16px;
+}
+
+#overlay p {
+  background: rgba(0,0,0,0);
+}
+
+#invalid {
+  display: none;
+  width: 100%;
+  text-align: center;
+  padding: 64px 0;
+}
+
+#invalid ul {
+  max-width: 560px;
+  text-align: left;
+  margin: 0 auto;
+  padding: 0 16px 0 32px;
+}
+
+#invalid ul li {
+  line-height: 1.5em;
+  margin-bottom: 8px;
+  list-style: circle;
+}
+
+.room.hint {
+  color: #AAAAAA;
+}
+
+.room.domain,
+.room.random {
+  font-weight: bolder;
+}
+
+#invalid h1 {
+  margin-bottom: 64px;
+}
+
+#invalid img {
+  width: 64px;
+  height: 64px;
+  max-width: 80%;
+  animation: pulsate 3s ease-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes pulsate {
+  0% {transform: scale(1.0, 1.0); opacity: 0.8;}
+  50% {transform: scale(1.2, 1.2); opacity: 1.0;}
+  100% {transform: scale(1.0, 1.0); opacity: 0.8;}
+}
+
+#form input {
+  display: block;
+  margin: 0 auto;
+  font-size: 32px;
+  background: rgba(0, 0, 0, 0);
+  color: #FFFFFF;
+  border: 0 none;
+  outline: 0 none;
+  text-align: center;
+  max-width: 90%;
+}
+
+#form label {
+  display: block;
+  font-size: 32px;
+  margin-bottom: 32px;
+}
+
+#form input[type="text"] {
+  padding: 16px 8px;
+  border-bottom: 2px solid rgba(20,204,112,1);;
+}
+
+#form input[type="submit"] {
+  cursor: pointer;
+  margin-top: 32px;
+  padding: 0 32px;
+  border-radius: 32px;
+  height: 64px;
+  line-height: 48px;
+  background: rgba(20,204,112,1);
+}
+
+.peer {
+  position: relative;
+  float: left;
+  width: 600px;
+  height: 300px;
+}
+
+.peer canvas,
+.peer div {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  line-height: 100%;
+}
+
+.peer div {
+  text-align: center;
+  font-size: 32px;
+  font-weight: normal;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0);
+}
+
+.peer .mute.action,
+.peer .unmute.action {
+  cursor: pointer;
+  padding: 16px;
+}
+
+.footer {
+  display: none;
+}
+
+.footer.logo {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0);
+  padding: 16px;
+  height: 64px;
+}
+
+.footer.logo img {
+  vertical-align: baseline;
+  background: rgba(0, 0, 0, 0);
+  width: 36px;
+  height: 36px;
+}
+
+.footer.action {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  padding: 16px 16px 0;
+  line-height: 64px;
+  font-size: 24px;
+  background: rgba(0, 0, 0, 0);
+  cursor: pointer;
+}
