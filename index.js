@@ -215,8 +215,8 @@ window.onload = function() {
       var canvas = peer.querySelector('canvas');
       peer.style.width = `${width}px`;
       peer.style.height = `${height}px`;
-      canvas.width = width;
-      canvas.height = height;
+      canvas.width = width * window.devicePixelRatio;
+      canvas.height = height * window.devicePixelRatio;
     })
     if (num > COL2 && num % 2 == 1) {
       var peer = peers[num - 1];
