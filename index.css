@@ -43,11 +43,10 @@ audio {
   max-width: 100%;
   transform: translate(-50%, -50%);
   font-size: 32px;
-  background: rgba(0,0,0,0.7);
+  background: rgba(0,0,0,0);
   padding: 16px;
 }
 
-#microphone,
 #overlay p {
   background: rgba(0,0,0,0);
 }
