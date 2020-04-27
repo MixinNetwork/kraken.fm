@@ -457,7 +457,7 @@ window.onload = function() {
         point = dataArray[i];
         barHeight = (point + 140)*2;
 
-        var r = Math.floor(barHeight);
+        var r = Math.floor(barHeight + 64);
         if (g % 3 === 0) {
           canvasCtx.fillStyle = `rgb(${r},${g},${b})`;
         } else if (g % 3 === 1) {
