@@ -426,7 +426,7 @@ window.onload = function() {
 
     var analyser = audioCtx.createAnalyser();
     analyser.fftSize = 256;
-    analyser.minDecibels = -90;
+    analyser.minDecibels = -80;
     analyser.maxDecibels = -10;
     analyser.smoothingTimeConstant = 0.85;
     audioCtx.createMediaStreamSource(stream).connect(analyser);
@@ -439,6 +439,7 @@ window.onload = function() {
     var dataArray = new Float32Array(bufferLength);
     var gb = uuidToColor(id);
     var g = gb[0], b = gb[1];
+    var MIN = 7;
 
     function draw() {
       var WIDTH = canvas.width;
@@ -450,13 +451,13 @@ window.onload = function() {
       canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
 
       var barWidth = (WIDTH / bufferLength) * 2.5;
-      var barHeight;
-      var x = 0;
+      var barHeight, point, x = 0;
 
       for (var i = 0; i < bufferLength; i++) {
-        barHeight = (dataArray[i] + 140)*2;
+        point = dataArray[i];
+        barHeight = (point + 140)*2;
 
-        var r = Math.floor(barHeight+100);
+        var r = Math.floor(barHeight);
         if (g % 3 === 0) {
           canvasCtx.fillStyle = `rgb(${r},${g},${b})`;
         } else if (g % 3 === 1) {
@@ -465,7 +466,10 @@ window.onload = function() {
           canvasCtx.fillStyle = `rgb(${g},${b},${r})`;
         }
 
-        barHeight = barHeight * HEIGHT / 256;
+        barHeight = HEIGHT / MIN + barHeight / 256 * HEIGHT * (MIN - 1) / MIN;
+        if (barHeight < HEIGHT / MIN) {
+          barHeight = HEIGHT / MIN;
+        }
         canvasCtx.fillRect(x,HEIGHT-barHeight,barWidth,barHeight);
 
         x += barWidth + 1;
