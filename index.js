@@ -1,4 +1,8 @@
 window.onload = function() {
+
+  const KRAKEN_API = 'https://rpc.kraken.fm';
+  const TURNSERVER = 'turn:35.235.85.40:443';
+
   /**
    *
    *  Base64 encode / decode
@@ -237,7 +241,7 @@ window.onload = function() {
   };
   const configuration = {
     iceServers: [{
-      urls: "turn:35.235.85.40:443",
+      urls: TURNSERVER,
       username: "webrtc",
       credential: "turnpassword"
     }],
@@ -488,7 +492,7 @@ window.onload = function() {
 
   async function rpc(method, params = []) {
     try {
-      const response = await fetch('https://rpc.kraken.fm', {
+      const response = await fetch(KRAKEN_API, {
         method: 'POST', // *GET, POST, PUT, DELETE, etc.
         mode: 'cors', // no-cors, *cors, same-origin
         cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
