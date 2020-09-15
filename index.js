@@ -1,7 +1,6 @@
 window.onload = function() {
 
   const KRAKEN_API = 'https://rpc.kraken.fm';
-  const TURNSERVER = 'turn:35.235.85.40:443';
 
   /**
    *
@@ -240,11 +239,6 @@ window.onload = function() {
     video: false
   };
   const configuration = {
-    iceServers: [{
-      urls: TURNSERVER,
-      username: "webrtc",
-      credential: "turnpassword"
-    }],
     iceTransportPolicy: 'relay',
     bundlePolicy: 'max-bundle',
     rtcpMuxPolicy: 'require',
@@ -280,6 +274,15 @@ window.onload = function() {
   async function start() {
     try {
       document.querySelectorAll('.peer').forEach((el) => el.remove());
+
+      var res = await rpc('turn', [unameRPC]);
+      if (res.data && res.data.length > 0) {
+        configuration.iceServers = res.data;
+        configuration.iceTransportPolicy = 'relay';
+      } else {
+        configuration.iceServers = [];
+        configuration.iceTransportPolicy = 'all';
+      }
 
       var pc = new RTCPeerConnection(configuration);
 
@@ -343,7 +346,7 @@ window.onload = function() {
       });
       await pc.setLocalDescription(await pc.createOffer());
 
-      var res = await rpc('publish', [rnameRPC, unameRPC, JSON.stringify(pc.localDescription)]);
+      res = await rpc('publish', [rnameRPC, unameRPC, JSON.stringify(pc.localDescription)]);
       if (res.data) {
         var jsep = JSON.parse(res.data.jsep);
         if (jsep.type == 'answer') {
