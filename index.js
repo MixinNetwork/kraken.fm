@@ -261,12 +261,14 @@ window.onload = function() {
       await start();
       return;
     }
-    if (res.data && res.data.type === 'offer') {
-      console.log("subscribe offer", res.data);
-      await pc.setRemoteDescription(res.data);
-      var sdp = await pc.createAnswer();
-      await pc.setLocalDescription(sdp);
-      await rpc('answer', [rnameRPC, unameRPC, ucid, JSON.stringify(sdp)]);
+    if (res.data) {
+      var jsep = JSON.parse(res.data.jsep);
+      if (jsep.type == 'offer') {
+        await pc.setRemoteDescription(jsep);
+        var sdp = await pc.createAnswer();
+        await pc.setLocalDescription(sdp);
+        await rpc('answer', [rnameRPC, unameRPC, ucid, JSON.stringify(sdp)]);
+      }
     }
     setTimeout(function () {
       subscribe(pc);
@@ -280,7 +282,6 @@ window.onload = function() {
       document.querySelectorAll('.peer').forEach((el) => el.remove());
 
       var pc = new RTCPeerConnection(configuration);
-      pc.createDataChannel('useless'); // FIXME remove this line
 
       pc.onicecandidate = ({candidate}) => {
         rpc('trickle', [rnameRPC, unameRPC, ucid, JSON.stringify(candidate)]);
@@ -343,10 +344,13 @@ window.onload = function() {
       await pc.setLocalDescription(await pc.createOffer());
 
       var res = await rpc('publish', [rnameRPC, unameRPC, JSON.stringify(pc.localDescription)]);
-      if (res.data && res.data.sdp.type === 'answer') {
-        await pc.setRemoteDescription(res.data.sdp);
-        ucid = res.data.track;
-        subscribe(pc);
+      if (res.data) {
+        var jsep = JSON.parse(res.data.jsep);
+        if (jsep.type == 'answer') {
+          await pc.setRemoteDescription(jsep);
+          ucid = res.data.track;
+          subscribe(pc);
+        }
       }
     } catch (err) {
       console.error(err);
