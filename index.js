@@ -207,7 +207,7 @@ window.onload = function() {
   const unameRPC = encodeURIComponent(uname);
 
   var ucid = "";
-  var visulizers = {};
+  var visualizers = {};
   window.onresize = function() {
     resizeVisulizers();
   };
@@ -383,7 +383,7 @@ window.onload = function() {
           }
           ae.className = 'unmute action';
           ae.innerHTML = muteIcon;
-          var vi = visulizers[id];
+          var vi = visualizers[id];
           if (vi && vi.stream && vi.stream.getTracks().length > 0) {
             vi.stream.getTracks()[0].enabled = false;
           }
@@ -399,7 +399,7 @@ window.onload = function() {
           }
           ae.className = 'mute action';
           ae.innerHTML = micIcon;
-          var vi = visulizers[id];
+          var vi = visualizers[id];
           if (vi && vi.stream && vi.stream.getTracks().length > 0) {
             vi.stream.getTracks()[0].enabled = true;
           }
@@ -416,7 +416,7 @@ window.onload = function() {
     } else {
       document.getElementById('peers').prepend(peer)
     }
-    visulizers[id] = { stream: stream }
+    visualizers[id] = { stream: stream }
 
     var canvas = document.getElementById(`canvas-${id}`);
     var el = peer.querySelector('.mute.action,.unmute.action');
@@ -427,7 +427,7 @@ window.onload = function() {
     el.onclick = (event) => {
       var el = event.target;
       var id = el.getAttribute('data-peer-id');
-      var vi = visulizers[id];
+      var vi = visualizers[id];
       if (el.className == 'mute action') {
         el.className = 'unmute action';
         el.innerHTML = muteIcon;
