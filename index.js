@@ -1,6 +1,13 @@
 window.onload = function() {
+  // production configuration in kraken.fm
+  //const KRAKEN_API = 'https://rpc.kraken.fm';
+  //const ROOM_PARAM = 'PATH';
+  //const ICE_POLICY = 'relay';
 
-  const KRAKEN_API = 'https://rpc.kraken.fm';
+  // good for local development
+  const KRAKEN_API = 'http://localhost:7000';
+  const ROOM_PARAM = 'QUERY';
+  const ICE_POLICY = 'all';
 
   /**
    *
@@ -169,7 +176,9 @@ window.onload = function() {
   }
 
   var rname = location.pathname.split('/')[1];
-  //rname = getUrlParam('room'); // DEV FIXME
+  if (ROOM_PARAM === 'QUERY') {
+    rname = getUrlParam('room');
+  }
   if (!rname || rname.trim() === '') {
     document.querySelector('.room.random').innerHTML = uuidv4();
     document.getElementById('invalid').style.display = 'block';
@@ -239,7 +248,6 @@ window.onload = function() {
     video: false
   };
   const configuration = {
-    iceTransportPolicy: 'relay',
     bundlePolicy: 'max-bundle',
     rtcpMuxPolicy: 'require',
     sdpSemantics: 'unified-plan'
@@ -276,7 +284,7 @@ window.onload = function() {
       document.querySelectorAll('.peer').forEach((el) => el.remove());
 
       var res = await rpc('turn', [unameRPC]);
-      if (res.data && res.data.length > 0) {
+      if (ICE_POLICY === 'relay' && res.data && res.data.length > 0) {
         configuration.iceServers = res.data;
         configuration.iceTransportPolicy = 'relay';
       } else {
