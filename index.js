@@ -258,7 +258,7 @@ window.onload = function() {
 
   async function subscribe(pc) {
     var res = await rpc('subscribe', [rnameRPC, unameRPC, ucid]);
-    if (res.error && typeof res.error === 'string' && res.error.indexOf(unameRPC + ' not found in')) {
+    if (res.error && typeof res.error === 'object' && typeof res.error.code === 'number' && [5002001, 5002002].indexOf(res.error.code) != -1) {
       pc.close();
       await start();
       return;
