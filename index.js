@@ -203,8 +203,8 @@ window.onload = function() {
   }
   uname = uid + ':' + Base64.encode(name);
 
-  const rnameRPC = encodeURIComponent(rname);
-  const unameRPC = encodeURIComponent(uname);
+  const rnameRPC = fixedEncodeURIComponent(rname);
+  const unameRPC = fixedEncodeURIComponent(uname);
 
   var ucid = "";
   var visualizers = {};
@@ -302,7 +302,7 @@ window.onload = function() {
         console.log("ontrack", event);
 
         var stream = event.streams[0];
-        var sid = decodeURIComponent(stream.id);
+        var sid = fixedDecodeURIComponent(stream.id);
         var id = sid.split(':')[0];
         var name = Base64.decode(sid.split(':')[1]);
         console.log(id, uid);
@@ -555,7 +555,17 @@ window.onload = function() {
     name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
     var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
     var results = regex.exec(window.location.search);
-    return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+    return results === null ? '' : fixedDecodeURIComponent(results[1]);
   }
 
+  function fixedEncodeURIComponent(str) {
+    return encodeURIComponent(str).replace(
+      /[!'()*]/g,
+      (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`
+    ).replace(/%20/g, '+');
+  }
+
+  function fixedDecodeURIComponent(str) {
+    return decodeURIComponent(str.replace(/\+/g, ' '));
+  }
 };
