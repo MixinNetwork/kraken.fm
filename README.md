@@ -15,7 +15,7 @@ Start a static web server to serve the repo directory. One of the easiest ways t
 Ensure Python installed and navigate to the directory of this repo. Run the command.
 
 ```bash
-$ python2 -m SimpleHTTPServer
+$ python3 -m http.server
 ```
 
 You should see the prompt that server is listening on port 8000.

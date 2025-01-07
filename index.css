@@ -26,7 +26,7 @@ audio {
 
 #microphone,
 #overlay,
-#form {
+#join-form {
   display: none;
   position: absolute;
   left: 0;
@@ -53,23 +53,18 @@ audio {
 }
 
 #invalid {
+  max-width: 640px;
   display: none;
   width: 100%;
   text-align: center;
+  margin: 0 auto;
   padding: 64px 0;
 }
 
-#invalid ul {
-  max-width: 560px;
-  text-align: left;
-  margin: 0 auto;
-  padding: 0 16px 0 32px;
-}
-
-#invalid ul li {
-  line-height: 1.5em;
-  margin-bottom: 8px;
-  list-style: circle;
+#invalid p {
+  font-size: 32px;
+  margin: 32px auto;
+  line-height: 1.7em;
 }
 
 .room.hint {
@@ -93,13 +88,22 @@ audio {
   animation-iteration-count: infinite;
 }
 
+#invalid #space-submit {
+  background: #FE394E;
+}
+
+#invalid form input[type="text"] {
+  width: 100%;
+  border-bottom: 2px solid #FFFFFF;
+}
+
 @keyframes pulsate {
   0% {transform: scale(1.0, 1.0); opacity: 0.8;}
   50% {transform: scale(1.2, 1.2); opacity: 1.0;}
   100% {transform: scale(1.0, 1.0); opacity: 0.8;}
 }
 
-#form input {
+form input {
   display: block;
   margin: 0 auto;
   font-size: 32px;
@@ -111,18 +115,18 @@ audio {
   max-width: 90%;
 }
 
-#form label {
+form label {
   display: block;
   font-size: 32px;
   margin-bottom: 32px;
 }
 
-#form input[type="text"] {
+form input[type="text"] {
   padding: 16px 8px;
   border-bottom: 2px solid rgba(20,204,112,1);;
 }
 
-#form input[type="submit"] {
+form input[type="submit"] {
   cursor: pointer;
   margin-top: 32px;
   padding: 0 32px;
@@ -159,6 +163,7 @@ audio {
 
 .peer .mute.action,
 .peer .unmute.action {
+  display: none;
   cursor: pointer;
   padding: 16px;
 }
@@ -181,6 +186,17 @@ audio {
   background: rgba(0, 0, 0, 0);
   width: 48px;
   height: 48px;
+}
+
+.footer.title {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0);
+  padding: 12px 16px;
+  height: 72px;
+  text-align: center;
+  width: 100%;
 }
 
 .footer.action {

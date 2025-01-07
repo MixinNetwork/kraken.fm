@@ -18,18 +18,16 @@
   <body>
     <div id="invalid">
       <h1><img src="/android-chrome-192x192.png" alt="Kraken"></h1>
-      <ul>
-        <li>start your audio conferencing at <span class="room domain">https://kraken.fm/</span><span class="room hint">ROOM-ID</span></li>
-        <li><span class="room hint">ROOM-ID</span> could be anything, a simple word is good for a public room</li>
-        <li>refresh this page to get a random and anonymous <span class="room hint">ROOM-ID</span> each time</li>
-        <li><span class="room random"></span></li>
-        <li>open source https://github.com/MixinNetwork/kraken.fm</li>
-      </ul>
+      <p>Start a space where only you can nominate the speakers.</p>
+      <form action="javascript:void(0);" id="create-room-form">
+        <input type="text" name="name" placeholder="space name">
+        <input type="submit" value="Start a Space" id="space-submit">
+      </form>
     </div>
     <div id="microphone">
       <p>🎤 please allow me to access your microphone 🎤</p>
     </div>
-    <div id="form">
+    <div id="join-form">
       <form action="javascript:void(0);">
         <label for="name">enter a name to help others recognize you</label>
         <input type="text" name="name">
@@ -41,8 +39,11 @@
     <div id="overlay">
       <p>🎉 share the page with people and wait for others to join 🎉</p>
     </div>
-    <h1 class="footer logo"><a href="/"><img src="/android-chrome-192x192.png" alt="Kraken"></a></h1>
+    <div class="footer logo"><a href="/"><img src="/android-chrome-192x192.png" alt="Kraken"></a></div>
+    <h1 class="footer title" id="space-name"></h1>
     <div class="footer party action"><span>🎉</span></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/md5.js"></script>
     <script type="text/javascript" src="/index.js"></script>
   </body>
 </html>

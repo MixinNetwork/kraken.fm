@@ -1,12 +1,11 @@
 window.onload = function() {
   // production configuration in kraken.fm
-  //const KRAKEN_API = 'https://rpc.kraken.fm';
-  //const ROOM_PARAM = 'PATH';
-  //const ICE_POLICY = 'relay';
+  // const KRAKEN_API = 'https://rpc.kraken.fm';
+  // const ICE_POLICY = 'relay';
 
   // good for local development
+  // const KRAKEN_API = 'http://192.168.122.202:7000';
   const KRAKEN_API = 'http://localhost:7000';
-  const ROOM_PARAM = 'QUERY';
   const ICE_POLICY = 'all';
 
   /**
@@ -175,25 +174,32 @@ window.onload = function() {
     localStorage.setItem('uid', uid);
   }
 
-  var rname = location.pathname.split('/')[1];
-  if (ROOM_PARAM === 'QUERY') {
-    rname = getUrlParam('room');
-  }
-  if (!rname || rname.trim() === '') {
-    document.querySelector('.room.random').innerHTML = uuidv4();
+  var rname = getUrlParam('space');
+  const spaceSum = getUrlParam('checksum');
+  if (!rname || rname.trim() === '' || !spaceSum || spaceSum.length != 32) {
     document.getElementById('invalid').style.display = 'block';
+    document.getElementById('space-submit').onclick = function () {
+      var val = document.querySelector('#create-room-form input[name="name"]').value;
+      if (!val || val.trim() === '') {
+        alert('space name can not be empty');
+      } else if (val.length > 32) {
+        alert('space name too long, at most 32 characters');
+      }
+      var sum = createSpace();
+      window.location = '?space=' + val + '&checksum=' + sum;
+    };
     return;
   }
 
   var name = localStorage.getItem(rname+':'+uid);
   if (!name || name === '') {
-    document.getElementById('form').style.display = 'block';
+    document.getElementById('join-form').style.display = 'block';
     document.getElementById('name-submit').onclick = function () {
-      var val = document.querySelector('input[name="name"]').value;
+      var val = document.querySelector('#join-form input[name="name"]').value;
       if (!val || val.trim() === '') {
-        alert('name can not be empty');
+        alert('your name can not be empty');
       } else if (val.length > 32) {
-        alert('name too long, at most 32 characters');
+        alert('your name too long, at most 32 characters');
       } else {
         localStorage.setItem(rname+':'+uid, val);
         window.location.reload(false);
@@ -201,6 +207,8 @@ window.onload = function() {
     };
     return;
   }
+  document.getElementById('space-name').innerHTML = rname;
+  rname = rname + spaceSum;
   uname = uid + ':' + Base64.encode(name);
 
   const rnameRPC = fixedEncodeURIComponent(rname);
@@ -278,6 +286,7 @@ window.onload = function() {
   }
 
   start();
+  adminMuteStateLoop(spaceSum);
 
   async function start() {
     try {
@@ -332,7 +341,7 @@ window.onload = function() {
           document.getElementById('peers').appendChild(el)
         }
 
-        buildCanvas(stream, id, name, event.track.id);
+        buildCanvas(stream, id, name, event.track.id, spaceSum);
         resizeVisulizers();
       };
 
@@ -344,9 +353,9 @@ window.onload = function() {
         console.error(err);
         return;
       }
-      buildCanvas(stream, uid, name, 'me');
+      buildCanvas(stream, uid, name, 'me', spaceSum);
       resizeVisulizers();
-      handlePartyPerform();
+      handlePartyPerform(spaceSum);
       audioCtx.resume();
 
       stream.getTracks().forEach((track) => {
@@ -354,7 +363,14 @@ window.onload = function() {
       });
       await pc.setLocalDescription(await pc.createOffer());
 
-      res = await rpc('publish', [rnameRPC, unameRPC, JSON.stringify(pc.localDescription)]);
+      res = await rpc('publish', [
+        rnameRPC,
+        unameRPC,
+        JSON.stringify(pc.localDescription),
+        100,
+        '',
+        !isAdminOfSpace(spaceSum)
+      ]);
       if (res.data) {
         var jsep = JSON.parse(res.data.jsep);
         if (jsep.type == 'answer') {
@@ -368,47 +384,81 @@ window.onload = function() {
     }
   }
 
-  function handlePartyPerform() {
+  function handlePartyPerform(spaceSum) {
     document.querySelectorAll('.footer').forEach((el) => el.style.display = 'inline-block');
     var el = document.querySelector('.party.action,.perform.action');
-    el.onclick = (event) => {
+    el.onclick = async (event) => {
+      if (!isAdminOfSpace(spaceSum)) {
+        return;
+      }
+      var res = await rpc('list', [rnameRPC]);
+      if (!res.data) {
+        console.log(res.error);
+        return;
+      }
+      for (var i in res.data.peers) {
+        var p = res.data.peers[i];
+        if (p.id.substr(0, 36) == localStorage.getItem('uid')) {
+          continue;
+        }
+        await rpc('mute', [
+          rnameRPC,
+          p.id,
+        ]);
+      }
       if (el.className == 'footer party action') {
         el.className = 'footer perform action';
         el.innerHTML = performIcon;
-        document.querySelectorAll('.peer').forEach((peer) => {
-          var ae = peer.querySelector('.action');
-          var id = ae.getAttribute('data-peer-id');
-          if (id === uid) {
-            return;
-          }
-          ae.className = 'unmute action';
-          ae.innerHTML = muteIcon;
-          var vi = visualizers[id];
-          if (vi && vi.stream && vi.stream.getTracks().length > 0) {
-            vi.stream.getTracks()[0].enabled = false;
-          }
-        });
       } else if (el.className == 'footer perform action') {
         el.className = 'footer party action';
         el.innerHTML = partyIcon;
-        document.querySelectorAll('.peer').forEach((peer) => {
-          var ae = peer.querySelector('.action');
-          var id = ae.getAttribute('data-peer-id');
-          if (id === uid) {
-            return;
-          }
-          ae.className = 'mute action';
-          ae.innerHTML = micIcon;
-          var vi = visualizers[id];
-          if (vi && vi.stream && vi.stream.getTracks().length > 0) {
-            vi.stream.getTracks()[0].enabled = true;
-          }
-        });
       }
     };
+    if (!isAdminOfSpace(spaceSum)) {
+      el.style.display = 'none';
+    }
   }
 
-  function buildCanvas(stream, id, name, tid) {
+  async function adminMuteStateLoop(spaceSum) {
+    if (!isAdminOfSpace(spaceSum)) {
+      return;
+    }
+    var res = await rpc('list', [rnameRPC]);
+    if (res.data) {
+      var isPartyMode = true;
+      for (var i in res.data.peers) {
+        var p = res.data.peers[i];
+        isPartyMode = isPartyMode && !p.mute;
+        var id = p.id.substr(0, 36);
+        var el = document.querySelector(`span[data-peer-id="${id}"]`);
+        if (!el) {
+          continue;
+        }
+        el.setAttribute('data-peer-name', p.id);
+        el.style.display = 'inline-block';
+        if (p.mute) {
+          el.className = 'unmute action';
+          el.innerHTML = muteIcon;
+        } else {
+          el.className = 'mute action';
+          el.innerHTML = micIcon;
+        }
+      }
+      var el = document.querySelector('.party.action,.perform.action');
+      if (isPartyMode) {
+        el.className = 'footer party action';
+        el.innerHTML = partyIcon;
+      } else {
+        el.className = 'footer perform action';
+        el.innerHTML = performIcon;
+      }
+    }
+    setTimeout(function () {
+      adminMuteStateLoop(spaceSum);
+    }, 1000);
+  }
+
+  function buildCanvas(stream, id, name, tid, spaceSum) {
     var old = document.getElementById(`peer-${id}`);
     var peer = htmlToElement(`<div class="peer" id="peer-${id}" data-track-id="${tid}"><canvas id="canvas-${id}"></canvas><div class="info"><span class="mute action" data-peer-id="${id}">${micIcon}</span><span class="name">${name}</span></div></div>`)
     if (old) {
@@ -420,26 +470,44 @@ window.onload = function() {
 
     var canvas = document.getElementById(`canvas-${id}`);
     var el = peer.querySelector('.mute.action,.unmute.action');
+    if (el.getAttribute('data-peer-id') == localStorage.getItem('uid')) {
+      el.style.display = 'inline-block';
+    }
     if (stream.getTracks().length > 0 && !stream.getTracks()[0].enabled) {
       el.className = 'unmute action';
       el.innerHTML = muteIcon;
     }
-    el.onclick = (event) => {
+    el.onclick = async (event) => {
       var el = event.target;
       var id = el.getAttribute('data-peer-id');
+      var isMyStream = id == localStorage.getItem('uid');
+      if (!isMyStream && !isAdminOfSpace(spaceSum)) {
+        return;
+      }
+      var uname = el.getAttribute('data-peer-name');
+      if (!uname || uname.substr(0, 36) != id) {
+        return;
+      }
       var vi = visualizers[id];
       if (el.className == 'mute action') {
         el.className = 'unmute action';
         el.innerHTML = muteIcon;
-        if (vi && vi.stream && vi.stream.getTracks().length > 0) {
+        if (vi && vi.stream && vi.stream.getTracks().length > 0 && isMyStream) {
           vi.stream.getTracks()[0].enabled = false;
         }
       } else {
         el.className = 'mute action';
         el.innerHTML = micIcon;
-        if (vi && vi.stream && vi.stream.getTracks().length > 0) {
+        if (vi && vi.stream && vi.stream.getTracks().length > 0 && isMyStream) {
           vi.stream.getTracks()[0].enabled = true;
         }
+      }
+      if (isAdminOfSpace(spaceSum)) {
+        var res = await rpc('mute', [
+          rnameRPC,
+          uname,
+        ]);
+        console.log('mute', id, res);
       }
     };
 
@@ -475,8 +543,14 @@ window.onload = function() {
       for (var i = 0; i < bufferLength; i++) {
         point = dataArray[i];
         barHeight = (point + 140)*2;
+        if (point == -Infinity) {
+          barHeight = 16;
+        }
 
         var r = Math.floor(barHeight + 64);
+        if (r > 255) {
+          r = 255;
+        }
         if (g % 3 === 0) {
           canvasCtx.fillStyle = `rgb(${r},${g},${b})`;
         } else if (g % 3 === 1) {
@@ -496,9 +570,14 @@ window.onload = function() {
 
       var el = document.getElementById('peer-'+id);
       if (el && el.getAttribute('data-track-id') === tid) {
+        var interval = 50;
+        var al = el.querySelector('span.action');
+        if (al.className.indexOf('unmute') >= 0) {
+          interval = 200;
+        }
         setTimeout(function () {
           requestAnimationFrame(draw);
-        }, 50)
+        }, interval);
       }
     };
 
@@ -506,6 +585,7 @@ window.onload = function() {
   }
 
   async function rpc(method, params = []) {
+    // console.log('RPC', method, params);
     try {
       const response = await fetch(KRAKEN_API, {
         method: 'POST', // *GET, POST, PUT, DELETE, etc.
@@ -524,6 +604,18 @@ window.onload = function() {
       console.log('fetch error', method, params, err);
       return await rpc(method, params);
     }
+  }
+
+  function createSpace() {
+    var secret = uuidv4();
+    var sum = CryptoJS.MD5(secret).toString();
+    localStorage.setItem(sum, secret);
+    return sum;
+  }
+
+  function isAdminOfSpace(sum) {
+    var secret = localStorage.getItem(sum);
+    return secret && CryptoJS.MD5(secret).toString() === sum;
   }
 
   function uuidv4() {
