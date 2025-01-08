@@ -401,10 +401,13 @@ window.onload = function() {
         if (p.id.substr(0, 36) == localStorage.getItem('uid')) {
           continue;
         }
-        await rpc('mute', [
-          rnameRPC,
-          p.id,
-        ]);
+        if (el.className == 'footer party action' && !p.mute ||
+          el.className == 'footer perform action' && p.mute) {
+          await rpc('mute', [
+            rnameRPC,
+            p.id,
+          ]);
+        }
       }
       if (el.className == 'footer party action') {
         el.className = 'footer perform action';
@@ -420,9 +423,6 @@ window.onload = function() {
   }
 
   async function adminMuteStateLoop(spaceSum) {
-    if (!isAdminOfSpace(spaceSum)) {
-      return;
-    }
     var res = await rpc('list', [rnameRPC]);
     if (res.data) {
       var isPartyMode = true;
@@ -436,21 +436,29 @@ window.onload = function() {
         }
         el.setAttribute('data-peer-name', p.id);
         el.style.display = 'inline-block';
+
+        var isMyStream = id == localStorage.getItem('uid');
         if (p.mute) {
+          var vi = visualizers[id];
+          if (vi && vi.stream && vi.stream.getTracks().length > 0 && isMyStream) {
+            vi.stream.getTracks()[0].enabled = false;
+          }
           el.className = 'unmute action';
           el.innerHTML = muteIcon;
-        } else {
+        } else if (!isMyStream){
           el.className = 'mute action';
           el.innerHTML = micIcon;
         }
       }
-      var el = document.querySelector('.party.action,.perform.action');
-      if (isPartyMode) {
-        el.className = 'footer party action';
-        el.innerHTML = partyIcon;
-      } else {
-        el.className = 'footer perform action';
-        el.innerHTML = performIcon;
+      if (isAdminOfSpace(spaceSum)) {
+        var el = document.querySelector('.party.action,.perform.action');
+        if (isPartyMode) {
+          el.className = 'footer party action';
+          el.innerHTML = partyIcon;
+        } else {
+          el.className = 'footer perform action';
+          el.innerHTML = performIcon;
+        }
       }
     }
     setTimeout(function () {
@@ -484,10 +492,6 @@ window.onload = function() {
       if (!isMyStream && !isAdminOfSpace(spaceSum)) {
         return;
       }
-      var uname = el.getAttribute('data-peer-name');
-      if (!uname || uname.substr(0, 36) != id) {
-        return;
-      }
       var vi = visualizers[id];
       if (el.className == 'mute action') {
         el.className = 'unmute action';
@@ -503,6 +507,10 @@ window.onload = function() {
         }
       }
       if (isAdminOfSpace(spaceSum)) {
+        var uname = el.getAttribute('data-peer-name');
+        if (!uname || uname.substr(0, 36) != id) {
+          return;
+        }
         var res = await rpc('mute', [
           rnameRPC,
           uname,
@@ -573,7 +581,7 @@ window.onload = function() {
         var interval = 50;
         var al = el.querySelector('span.action');
         if (al.className.indexOf('unmute') >= 0) {
-          interval = 200;
+          interval = 100;
         }
         setTimeout(function () {
           requestAnimationFrame(draw);
