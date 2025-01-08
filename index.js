@@ -1,12 +1,12 @@
 window.onload = function() {
   // production configuration in kraken.fm
-  // const KRAKEN_API = 'https://rpc.kraken.fm';
-  // const ICE_POLICY = 'relay';
+  const KRAKEN_API = 'https://rpc.kraken.fm';
+  const ICE_POLICY = 'relay';
 
   // good for local development
   // const KRAKEN_API = 'http://192.168.122.202:7000';
-  const KRAKEN_API = 'http://localhost:7000';
-  const ICE_POLICY = 'all';
+  // const KRAKEN_API = 'http://localhost:7000';
+  // const ICE_POLICY = 'all';
 
   /**
    *
@@ -208,6 +208,8 @@ window.onload = function() {
     return;
   }
   document.getElementById('space-name').innerHTML = rname;
+  const htmlTitle = document.querySelector('title');
+  htmlTitle.innerHTML = rname + ' | ' + htmlTitle.innerText;
   rname = rname + spaceSum;
   uname = uid + ':' + Base64.encode(name);
 

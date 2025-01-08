@@ -64,7 +64,6 @@ audio {
 #invalid p {
   font-size: 32px;
   margin: 32px auto;
-  line-height: 1.7em;
 }
 
 .room.hint {
@@ -174,6 +173,7 @@ form input[type="submit"] {
 
 .footer.logo {
   position: fixed;
+  z-index: 999;
   left: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0);
