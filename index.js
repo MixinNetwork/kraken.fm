@@ -207,9 +207,9 @@ window.onload = function() {
     };
     return;
   }
-  document.getElementById('space-name').innerHTML = rname;
+  document.getElementById('space-name').textContent = rname;
   const htmlTitle = document.querySelector('title');
-  htmlTitle.innerHTML = rname + ' | ' + htmlTitle.innerText;
+  htmlTitle.textContent = rname + ' | ' + htmlTitle.innerText;
   rname = rname + spaceSum;
   uname = uid + ':' + Base64.encode(name);
 
@@ -413,10 +413,10 @@ window.onload = function() {
       }
       if (el.className == 'footer party action') {
         el.className = 'footer perform action';
-        el.innerHTML = performIcon;
+        el.textContent = performIcon;
       } else if (el.className == 'footer perform action') {
         el.className = 'footer party action';
-        el.innerHTML = partyIcon;
+        el.textContent = partyIcon;
       }
     };
     if (!isAdminOfSpace(spaceSum)) {
@@ -446,20 +446,20 @@ window.onload = function() {
             vi.stream.getTracks()[0].enabled = false;
           }
           el.className = 'unmute action';
-          el.innerHTML = muteIcon;
+          el.textContent = muteIcon;
         } else if (!isMyStream){
           el.className = 'mute action';
-          el.innerHTML = micIcon;
+          el.textContent = micIcon;
         }
       }
       if (isAdminOfSpace(spaceSum)) {
         var el = document.querySelector('.party.action,.perform.action');
         if (isPartyMode) {
           el.className = 'footer party action';
-          el.innerHTML = partyIcon;
+          el.textContent = partyIcon;
         } else {
           el.className = 'footer perform action';
-          el.innerHTML = performIcon;
+          el.textContent = performIcon;
         }
       }
     }
@@ -470,7 +470,8 @@ window.onload = function() {
 
   function buildCanvas(stream, id, name, tid, spaceSum) {
     var old = document.getElementById(`peer-${id}`);
-    var peer = htmlToElement(`<div class="peer" id="peer-${id}" data-track-id="${tid}"><canvas id="canvas-${id}"></canvas><div class="info"><span class="mute action" data-peer-id="${id}">${micIcon}</span><span class="name">${name}</span></div></div>`)
+    var peer = htmlToElement(`<div class="peer" id="peer-${id}" data-track-id="${tid}"><canvas id="canvas-${id}"></canvas><div class="info"><span class="mute action" data-peer-id="${id}">${micIcon}</span><span class="name"></span></div></div>`)
+    peer.querySelector('span.name').textContent = name;
     if (old) {
       old.replaceWith(peer);
     } else {
@@ -485,7 +486,7 @@ window.onload = function() {
     }
     if (stream.getTracks().length > 0 && !stream.getTracks()[0].enabled) {
       el.className = 'unmute action';
-      el.innerHTML = muteIcon;
+      el.textContent = muteIcon;
     }
     el.onclick = async (event) => {
       var el = event.target;
@@ -497,13 +498,13 @@ window.onload = function() {
       var vi = visualizers[id];
       if (el.className == 'mute action') {
         el.className = 'unmute action';
-        el.innerHTML = muteIcon;
+        el.textContent = muteIcon;
         if (vi && vi.stream && vi.stream.getTracks().length > 0 && isMyStream) {
           vi.stream.getTracks()[0].enabled = false;
         }
       } else {
         el.className = 'mute action';
-        el.innerHTML = micIcon;
+        el.textContent = micIcon;
         if (vi && vi.stream && vi.stream.getTracks().length > 0 && isMyStream) {
           vi.stream.getTracks()[0].enabled = true;
         }
