@@ -73,8 +73,8 @@ input:focus::placeholder {
 
 #home p {
   font-size: 14px;
-  transparent: 0.64;
-  line-height: 1.2em;
+  opacity: 0.9;
+  line-height: 1.5em;
   margin-top: 16px;
 }
 
@@ -101,7 +101,7 @@ input:focus::placeholder {
 
 #home #space-submit {
   background: #FE394E;
-  margin-bottom: 32px;
+  margin-bottom: 64px;
 }
 
 #home form input[type="text"] {
