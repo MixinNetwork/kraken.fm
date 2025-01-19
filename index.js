@@ -618,7 +618,8 @@ window.onload = function() {
   }
 
   function createSpace() {
-    var secret = uuidv4();
+    var seed = window.crypto.getRandomValues(new Uint32Array(1))[0];
+    var secret = uuidv4() + seed;
     var sum = CryptoJS.MD5(secret).toString();
     localStorage.setItem(sum, secret);
     return sum;
