@@ -24,6 +24,10 @@ audio {
   opacity: 0;
 }
 
+input:focus::placeholder {
+  color: transparent;
+}
+
 #microphone,
 #overlay,
 #join-form {
@@ -52,7 +56,7 @@ audio {
   text-shadow: 0 0 7px rgba(0,0,0,0.7);
 }
 
-#invalid {
+#home {
   max-width: 640px;
   display: none;
   width: 100%;
@@ -61,9 +65,17 @@ audio {
   padding: 64px 0;
 }
 
-#invalid p {
+#home h2 {
   font-size: 32px;
+  font-weight: normal;
   margin: 32px auto;
+}
+
+#home p {
+  font-size: 14px;
+  transparent: 0.64;
+  line-height: 1.2em;
+  margin-top: 16px;
 }
 
 .room.hint {
@@ -75,11 +87,11 @@ audio {
   font-weight: bolder;
 }
 
-#invalid h1 {
+#home h1 {
   margin-bottom: 64px;
 }
 
-#invalid img {
+#home img {
   width: 64px;
   height: 64px;
   max-width: 80%;
@@ -87,11 +99,12 @@ audio {
   animation-iteration-count: infinite;
 }
 
-#invalid #space-submit {
+#home #space-submit {
   background: #FE394E;
+  margin-bottom: 32px;
 }
 
-#invalid form input[type="text"] {
+#home form input[type="text"] {
   width: 100%;
   border-bottom: 2px solid #FFFFFF;
 }

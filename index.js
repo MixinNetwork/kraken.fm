@@ -177,7 +177,7 @@ window.onload = function() {
   var rname = getUrlParam('space');
   const spaceSum = getUrlParam('checksum');
   if (!rname || rname.trim() === '' || !spaceSum || spaceSum.length != 32) {
-    document.getElementById('invalid').style.display = 'block';
+    document.getElementById('home').style.display = 'block';
     document.getElementById('space-submit').onclick = function () {
       var val = document.querySelector('#create-room-form input[name="name"]').value;
       if (!val || val.trim() === '') {
