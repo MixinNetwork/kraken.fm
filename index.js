@@ -165,8 +165,8 @@ window.onload = function() {
     } // End Function _utf8_decode
   }
 
-  const micIcon = '🎤', muteIcon = '🔇';
-  const partyIcon = '🎉', performIcon = '🗣';
+  const micIcon = '🦜', muteIcon = '😶';
+  const partyIcon = '🎉', performIcon = '🗣', heartIcon = '💓';
 
   var uid = localStorage.getItem('uid');
   if (!uid) {
@@ -417,10 +417,13 @@ window.onload = function() {
       } else if (el.className == 'footer perform action') {
         el.className = 'footer party action';
         el.textContent = partyIcon;
+      } else if (el.className == 'footer heart action') {
+        // send heart to the space
       }
     };
     if (!isAdminOfSpace(spaceSum)) {
-      el.style.display = 'none';
+      el.className = 'footer heart action';
+      el.textContent = heartIcon;
     }
   }
 

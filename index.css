@@ -171,6 +171,7 @@ form input[type="submit"] {
   font-weight: normal;
   padding: 16px;
   background: rgba(0, 0, 0, 0);
+  overflow: hidden;
 }
 
 .peer .mute.action,
