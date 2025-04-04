@@ -633,10 +633,17 @@ window.onload = function() {
   }
 
   function uuidv4() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-      var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
+    const randomValues = new Uint8Array(16);
+    window.crypto.getRandomValues(randomValues);
+    randomValues[6] = (randomValues[6] & 0x0f) | 0x40; // Set the version to 4
+    randomValues[8] = (randomValues[8] & 0x3f) | 0x80; // Set the variant to 10
+    return Array.from(randomValues).map((value, index) => {
+      const hex = value.toString(16).padStart(2, '0');
+      if (index === 4 || index === 6 || index === 8 || index === 10) {
+        return '-' + hex;
+      }
+      return hex;
+    }).join('');
   }
 
   function htmlToElement(html) {
