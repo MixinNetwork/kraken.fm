@@ -621,7 +621,7 @@ window.onload = function() {
   }
 
   function createSpace() {
-    var seed = window.crypto.getRandomValues(new Uint32Array(1))[0];
+    var seed = uuidv4();
     var sum = CryptoJS.MD5(seed).toString();
     localStorage.setItem(sum, seed);
     return sum;
