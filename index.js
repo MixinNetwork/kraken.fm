@@ -659,7 +659,7 @@ window.onload = function() {
   }
 
   function getUrlParam(name) {
-    name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+    name = name.replace(/\[/g, '\\[').replace(/\]/g, '\\]');
     var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
     var results = regex.exec(window.location.search);
     return results === null ? '' : fixedDecodeURIComponent(results[1]);
