@@ -186,7 +186,7 @@ window.onload = function() {
         alert('space name too long, at most 32 characters');
       }
       var sum = createSpace();
-      window.location = '?space=' + val + '&checksum=' + sum;
+      window.location = '?space=' + fixedEncodeURIComponent(val) + '&checksum=' + sum;
     };
     return;
   }
