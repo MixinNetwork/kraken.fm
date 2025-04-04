@@ -622,15 +622,14 @@ window.onload = function() {
 
   function createSpace() {
     var seed = window.crypto.getRandomValues(new Uint32Array(1))[0];
-    var secret = uuidv4() + seed;
-    var sum = CryptoJS.MD5(secret).toString();
-    localStorage.setItem(sum, secret);
+    var sum = CryptoJS.MD5(seed).toString();
+    localStorage.setItem(sum, seed);
     return sum;
   }
 
   function isAdminOfSpace(sum) {
-    var secret = localStorage.getItem(sum);
-    return secret && CryptoJS.MD5(secret).toString() === sum;
+    var seed = localStorage.getItem(sum);
+    return seed && CryptoJS.MD5(seed).toString() === sum;
   }
 
   function uuidv4() {
