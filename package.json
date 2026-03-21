@@ -1,5 +1,6 @@
 {
   "name": "kraken-fm",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "cert:https": "bash scripts/generate-dev-cert.sh",

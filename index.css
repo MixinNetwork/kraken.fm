@@ -71,11 +71,13 @@ input:focus::placeholder {
   margin: 32px auto;
 }
 
-#home p {
+#home p,
+#home a {
   font-size: 14px;
   opacity: 0.9;
   line-height: 1.5em;
   margin-top: 16px;
+  color: #FFFFFF;
 }
 
 .room.hint {
