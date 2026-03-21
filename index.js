@@ -167,6 +167,7 @@ window.onload = function() {
 
   const micIcon = '🦜', muteIcon = '😶';
   const partyIcon = '🎉', performIcon = '🗣', heartIcon = '💓';
+  const e2eeAnchorParam = 'key';
 
   var uid = localStorage.getItem('uid');
   if (!uid) {
@@ -182,12 +183,20 @@ window.onload = function() {
       var val = document.querySelector('#create-room-form input[name="name"]').value;
       if (!val || val.trim() === '') {
         alert('space name can not be empty');
+        return;
       } else if (val.length > 32) {
         alert('space name too long, at most 32 characters');
+        return;
       }
       var sum = createSpace();
-      window.location = '?space=' + fixedEncodeURIComponent(val) + '&checksum=' + sum;
+      var e2eeKey = generateE2EEKey();
+      window.location = '?space=' + fixedEncodeURIComponent(val) + '&checksum=' + sum + buildHashString({ key: e2eeKey });
     };
+    return;
+  }
+
+  const e2eeContext = createE2EEContext(spaceSum);
+  if (!e2eeContext.enabled) {
     return;
   }
 
@@ -211,7 +220,7 @@ window.onload = function() {
   const htmlTitle = document.querySelector('title');
   htmlTitle.textContent = rname + ' | ' + htmlTitle.innerText;
   rname = rname + spaceSum;
-  uname = uid + ':' + Base64.encode(name);
+  var uname = uid + ':' + Base64.encode(name);
 
   const rnameRPC = fixedEncodeURIComponent(rname);
   const unameRPC = fixedEncodeURIComponent(uname);
@@ -260,11 +269,19 @@ window.onload = function() {
   const configuration = {
     bundlePolicy: 'max-bundle',
     rtcpMuxPolicy: 'require',
-    sdpSemantics: 'unified-plan'
+    sdpSemantics: 'unified-plan',
+    // Needed by the createEncodedStreams() fallback used by older browsers.
+    encodedInsertableStreams: true
   };
 
   const AudioContext = window.AudioContext || window.webkitAudioContext;
   const audioCtx = new AudioContext();
+
+  if (e2eeContext.worker) {
+    window.addEventListener('beforeunload', function() {
+      e2eeContext.worker.terminate();
+    }, { once: true });
+  }
 
   async function subscribe(pc) {
     var res = await rpc('subscribe', [rnameRPC, unameRPC, ucid]);
@@ -311,6 +328,10 @@ window.onload = function() {
 
       pc.ontrack = (event) => {
         console.log("ontrack", event);
+        if (!attachE2EETransform(event.receiver, 'decrypt', e2eeContext)) {
+          showBlockingOverlay('Failed to attach the end-to-end audio decryptor for this room.');
+          return;
+        }
 
         var stream = event.streams[0];
         var sid = fixedDecodeURIComponent(stream.id);
@@ -361,7 +382,10 @@ window.onload = function() {
       audioCtx.resume();
 
       stream.getTracks().forEach((track) => {
-        pc.addTrack(track, stream);
+        var sender = pc.addTrack(track, stream);
+        if (!attachE2EETransform(sender, 'encrypt', e2eeContext)) {
+          throw new Error('failed to attach end-to-end audio encryptor');
+        }
       });
       await pc.setLocalDescription(await pc.createOffer());
 
@@ -627,6 +651,71 @@ window.onload = function() {
     return sum;
   }
 
+  function createE2EEContext(spaceSum) {
+    var key = getHashParam(e2eeAnchorParam);
+    var supportDetails = window.KrakenE2EE && window.KrakenE2EE.getSupportDetails
+      ? window.KrakenE2EE.getSupportDetails()
+      : null;
+    console.log('[kraken-e2ee] bootstrap', {
+      hasShim: !!window.KrakenE2EE,
+      hasKey: !!key,
+      protocol: window.location.protocol,
+      isSecureContext: typeof window.isSecureContext === 'boolean' ? window.isSecureContext : null,
+      support: supportDetails
+    });
+    if (!key) {
+      if (isAdminOfSpace(spaceSum)) {
+        key = generateE2EEKey();
+        setHashParam(e2eeAnchorParam, key);
+        console.log('[kraken-e2ee] generated room key for admin');
+      } else {
+        console.log('[kraken-e2ee] missing room key for non-admin join');
+        showBlockingOverlay('This room is end-to-end encrypted. Open it with a URL that includes #key=...');
+        return { enabled: false };
+      }
+    }
+
+    if (supportDetails && (!supportDetails.hasSubtleCrypto || supportDetails.isSecureContext === false)) {
+      console.log('[kraken-e2ee] secure context requirement failed', {
+        protocol: window.location.protocol,
+        host: window.location.host,
+        support: supportDetails
+      });
+      showBlockingOverlay('End-to-end encryption requires a secure context. Open this room over HTTPS or from http://localhost so Firefox can enable WebCrypto AES.');
+      return { enabled: false };
+    }
+
+    if (!window.KrakenE2EE || !window.KrakenE2EE.supportsE2EE()) {
+      console.log('[kraken-e2ee] browser support check failed', {
+        hasShim: !!window.KrakenE2EE,
+        support: supportDetails
+      });
+      showBlockingOverlay('This browser cannot apply the WebRTC audio transforms needed for end-to-end encryption.');
+      return { enabled: false };
+    }
+
+    var worker = null;
+    if (window.KrakenE2EE.usesWorkerTransforms()) {
+      try {
+        worker = window.KrakenE2EE.createWorker();
+        console.log('[kraken-e2ee] worker created');
+      } catch (error) {
+        console.error(error);
+        console.log('[kraken-e2ee] worker creation failed', error);
+        showBlockingOverlay('The end-to-end encryption worker could not be started in this browser.');
+        return { enabled: false };
+      }
+    }
+
+    return {
+      enabled: true,
+      key: key,
+      worker: worker,
+      encryptors: new WeakSet(),
+      decryptors: new WeakSet()
+    };
+  }
+
   function isAdminOfSpace(sum) {
     var seed = localStorage.getItem(sum);
     return seed && CryptoJS.MD5(seed).toString() === sum;
@@ -671,6 +760,22 @@ window.onload = function() {
     return results === null ? '' : fixedDecodeURIComponent(results[1]);
   }
 
+  function getHashParam(name) {
+    var params = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    return params.get(name) || '';
+  }
+
+  function setHashParam(name, value) {
+    var params = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    params.set(name, value);
+    var hash = params.toString();
+    window.history.replaceState(null, '', window.location.pathname + window.location.search + (hash ? '#' + hash : ''));
+  }
+
+  function buildHashString(params) {
+    return '#' + (new URLSearchParams(params)).toString();
+  }
+
   function fixedEncodeURIComponent(str) {
     return encodeURIComponent(str).replace(
       /[!'()*]/g,
@@ -680,5 +785,41 @@ window.onload = function() {
 
   function fixedDecodeURIComponent(str) {
     return decodeURIComponent(str.replace(/\+/g, ' '));
+  }
+
+  function generateE2EEKey() {
+    var bytes = new Uint8Array(32);
+    window.crypto.getRandomValues(bytes);
+    var chars = [];
+    bytes.forEach((value) => chars.push(String.fromCharCode(value)));
+    return btoa(chars.join('')).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+  }
+
+  function attachE2EETransform(target, operation, context) {
+    var registry = operation === 'encrypt' ? context.encryptors : context.decryptors;
+    if (!target || registry.has(target)) {
+      return !!target;
+    }
+    var attached = window.KrakenE2EE.attachTransform(target, {
+      operation: operation,
+      key: context.key,
+      worker: context.worker,
+      allowUnencrypted: false
+    });
+    if (attached) {
+      registry.add(target);
+    }
+    return attached;
+  }
+
+  function showBlockingOverlay(message) {
+    document.getElementById('home').style.display = 'none';
+    document.getElementById('join-form').style.display = 'none';
+    document.getElementById('microphone').style.display = 'none';
+
+    var overlay = document.getElementById('overlay');
+    overlay.innerHTML = '<p></p>';
+    overlay.querySelector('p').textContent = message;
+    overlay.style.display = 'block';
   }
 };

@@ -23,3 +23,36 @@ Serving HTTP on 0.0.0.0 port 8000 ...
 ```
 
 Open your browser, start a room from `http://localhost:8000`.
+
+Room URLs now carry an end-to-end encryption secret in the URL fragment, for example
+`http://localhost:8000/?space=demo&checksum=...#key=...`.
+The `#key` fragment is not sent to the Kraken RPC server and must be preserved when sharing room links.
+
+If you want E2EE to work in Firefox and other modern browsers, use a secure context:
+`https://...` or `http://localhost:...`.
+Serving the app from a plain `http://` LAN or public IP address disables WebCrypto AES and E2EE will not start.
+
+## HTTPS Dev Server
+
+This repo includes a no-dependency local HTTPS server for E2EE testing.
+
+Generate a development certificate:
+
+```bash
+npm run cert:https
+```
+
+Start the HTTPS server:
+
+```bash
+npm run dev:https
+```
+
+By default the server listens on `https://localhost:8443`.
+It also prints local network URLs that match the generated certificate SAN list.
+
+Optional environment variables:
+
+```bash
+HTTPS_PORT=9443 HTTPS_HOST=0.0.0.0 npm run dev:https
+```
